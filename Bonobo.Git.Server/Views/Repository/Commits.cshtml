@@ -10,12 +10,65 @@
         @Html.Partial("_BranchSwitcher")
         @if (Model.Commits != null)
         {
-            var grid = new WebGrid(source: Model.Commits, rowsPerPage: 10, canPage:true, canSort:false);
-            @grid.GetHtml(displayHeader: false, mode: WebGridPagerModes.All, 
+            var grid = new WebGrid(source: Model.Commits, rowsPerPage: 10, canPage: true, canSort: false);
+            @grid.GetHtml(displayHeader: false, mode: WebGridPagerModes.All,
                 columns: grid.Columns(
                     grid.Column(format: item => Html.Partial("_Commit", (RepositoryCommitModel)item.Value))
                     )
                 )
         }
     </div>
+
+    <section>
+        @foreach (var commit in Model.Commits)
+        {
+            <div>
+                ID: @commit.ID
+                <ul>
+                    @foreach (var parent in commit.Parents)
+                    {
+                        <li>@parent</li>
+                    }
+                </ul>
+
+            </div>
+        }
+    </section>
+
+    @section scripts{
+        <!--  The Raphael JavaScript library for vector graphics display  -->
+        <script type="text/javascript" src="~/Scripts/raphael-min.js"></script>
+
+        <!--  Dracula  -->
+        <!--  An extension of Raphael for connecting shapes -->
+        <script type="text/javascript" src="~/Scripts/dracula_graffle.js"></script>
+
+        <!--  Graphs  -->
+        <script type="text/javascript" src="~/Scripts/dracula_graph.js"></script>
+        <script type="text/javascript" src="~/Scripts/dracula_algorithms.js"></script>
+
+        <div id="canvas"></div>
+
+        <script type="text/javascript">
+            var render = function(){
+                console.log(arguments);
+            };
+
+            var g = new Graph();
+
+            @foreach (var commit in Model.Commits)
+            {
+                foreach (var parent in commit.Parents)
+                {
+                    @:g.addEdge('@parent.Substring(0, 7)', '@commit.ID.Substring(0, 7)', { label: '@commit.Message', render: render });
+                }
+            }
+
+            var layouter = new Graph.Layout.Spring(g);
+            layouter.layout();
+
+            var renderer = new Graph.Renderer.Raphael('canvas', g, 1000, 700);
+            renderer.draw();
+        </script>
+    }
 }
