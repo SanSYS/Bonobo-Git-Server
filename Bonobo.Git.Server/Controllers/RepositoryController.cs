@@ -365,21 +365,39 @@ namespace Bonobo.Git.Server.Controllers
         [WebAuthorizeRepository]
         public ActionResult Commits(string id, string encodedName)
         {
+            RepositoryCommitsModel model = GetCommits(id, encodedName);
+
+            return View(model);
+        }
+
+        private RepositoryCommitsModel GetCommits(string id, string encodedName)
+        {
             ViewBag.ID = id;
             ViewBag.ShowShortMessageOnly = true;
-            if (!String.IsNullOrEmpty(id))
+
+            if (String.IsNullOrEmpty(id))
             {
-                using (var browser = new RepositoryBrowser(Path.Combine(UserConfiguration.Current.Repositories, id)))
-                {
-                    var name = PathEncoder.Decode(encodedName);
-                    string referenceName;
-                    var commits = browser.GetCommits(name, out referenceName);
-                    PopulateBranchesData(browser, referenceName);
-                    return View(new RepositoryCommitsModel { Commits = commits, Name = id });
-                }
+                return null;
             }
 
-            return View();
+            using (var browser = new RepositoryBrowser(Path.Combine(UserConfiguration.Current.Repositories, id)))
+            {
+                string name = PathEncoder.Decode(encodedName);
+                    
+                string referenceName;
+
+                IEnumerable<RepositoryCommitModel> commits = browser.GetCommits(name, out referenceName);
+            
+                PopulateBranchesData(browser, referenceName);
+                    
+                return new RepositoryCommitsModel { Commits = commits, Name = id };
+            }
+        }
+
+        [WebAuthorizeRepository]
+        public ActionResult Graph(string id, string encodedName)
+        {
+            return View(GetCommits(id, encodedName));
         }
 
         [WebAuthorizeRepository]

@@ -446,6 +446,9 @@
     <Content Include="Content\images\git-logo.png" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Scripts\dracula_algorithms.js" />
+    <Content Include="Scripts\dracula_graffle.js" />
+    <Content Include="Scripts\dracula_graph.js" />
     <Content Include="Scripts\highlight.pack.js" />
     <Content Include="Scripts\jquery-1.4.4-vsdoc.js" />
     <Content Include="Scripts\jquery-1.4.4.js" />
@@ -474,7 +477,18 @@
     <Content Include="Scripts\MicrosoftMvcAjax.js" />
     <Content Include="Scripts\MicrosoftMvcValidation.debug.js" />
     <Content Include="Scripts\MicrosoftMvcValidation.js" />
+    <Content Include="Scripts\plugins\sigma.layout.forceAtlas2.min.js" />
+    <Content Include="Scripts\plugins\sigma.parsers.gexf.min.js" />
+    <Content Include="Scripts\plugins\sigma.parsers.json.min.js" />
+    <Content Include="Scripts\plugins\sigma.plugins.animate.min.js" />
+    <Content Include="Scripts\plugins\sigma.plugins.dragNodes.min.js" />
+    <Content Include="Scripts\plugins\sigma.plugins.filter.min.js" />
+    <Content Include="Scripts\plugins\sigma.plugins.neighborhoods.min.js" />
+    <Content Include="Scripts\plugins\sigma.renderers.customShapes.min.js" />
+    <Content Include="Scripts\plugins\sigma.statistics.HITS.min.js" />
+    <Content Include="Scripts\raphael-min.js" />
     <Content Include="Scripts\RepositoryGroupToggle.js" />
+    <Content Include="Scripts\sigma.min.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -554,6 +568,7 @@
     <Content Include="Views\Repository\Blame.cshtml" />
     <Content Include="Views\Home\ForgotPassword.cshtml" />
     <Content Include="Views\Home\ResetPassword.cshtml" />
+    <Content Include="Views\Repository\Graph.cshtml" />
     <None Include="Web.Release-Api.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
