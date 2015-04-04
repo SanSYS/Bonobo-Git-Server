@@ -29,6 +29,11 @@ namespace Bonobo.Git.Server
             return _repository.Branches.Select(s => s.Name).ToList();
         }
 
+        public IQueryableCommitLog GetAllCommits()
+        {
+            return _repository.Commits;
+        }
+
         public IEnumerable<string> GetTags()
         {
             return _repository.Tags.Select(s => s.Name).ToList();

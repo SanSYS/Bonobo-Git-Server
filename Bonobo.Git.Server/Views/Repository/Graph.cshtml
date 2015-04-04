@@ -1,10 +1,22 @@
 ﻿@using Bonobo.Git.Server.Extensions
+@using System.Linq;
+@using System.Collections;
+@using System.Collections.Concurrent;
+
 @model RepositoryCommitsModel
 @{
     Layout = "~/Views/Repository/_RepositoryLayout.cshtml";
     ViewBag.Title = Resources.Repository_Commits_Title;
     List<string> addedNodes = new List<string>();
-    var rnd = new Random();
+    //var rnd = new Random();
+    int x = 1;
+    int y = 1;
+    ConcurrentDictionary<string, Pair> coords = new ConcurrentDictionary<string, Pair>();
+
+    Func<string, Pair> GetCoords = (commitId) => coords.GetOrAdd(commitId, p =>
+    {
+        return new Pair();
+    });
 }
 
 @if (Model != null)
@@ -17,87 +29,79 @@
         }
     </style>
 
-    <div id="container"></div>
+    <canvas id="gitGraph"></canvas>
 
     @section scripts{
-        <script type="text/javascript" src="~/Scripts/sigma.min.js"></script>
-        <script type="text/javascript" src="~/Scripts/plugins/sigma.parsers.json.min.js"></script>
+        <script type="text/javascript" src="~/Scripts/gitgraph.js"></script>
 
         <div id="canvas" style="width:100%"></div>
 
         <script type="text/javascript">
-    var nodes = [],
-        edges = [],
-        commits = {};
+            var myTemplateConfig = {
+                colors: [ "#F00", "#0F0", "#00F" ], // branches colors, 1 per column
+                branch: {
+                    lineWidth: 8,
+                    spacingX: 50
+                },
+                commit: {
+                    spacingY: -80,
+                    dot: {
+                        size: 12
+                    },
+                    message: {
+                        displayAuthor: true,
+                        displayHash: false,
+                        font: "normal 12pt Arial"
+                    }
+                }
+            };
 
-    @foreach (var commit in Model.Commits.Select(p => new {
+            var myTemplate = new GitGraphTemplate( myTemplateConfig );
+
+            var config = {
+                template: "metro"       // could be: "blackarrow" or "metro" or myTemplate (custom Template object)
+                //, mode: "compact"     // special compact mode : hide messages & compact graph
+            };
+
+            var gitGraph = new GitGraph(config);
+
+            var branches = {};
+
+            //var master = gitGraph.branch( "master" );
+
+            @foreach (var commit in Model.Commits.Select(p => new {
                 ID = p.ID.Substring(0, 7),
                 Message = p.Message.Replace("\r\n", "\\\\n").Replace("\n", "\\\\n"),
-                p.Parents
-            }).Take(10))
+                BID = p.Parents.First().Substring(0, 7)
+            }).Take(100))
             {
-                @:commits['@commit.ID'] = 1;
+                @: var branchName = '@commit.BID.Substring(0, 7)';
 
-                foreach (var parent in commit.Parents)
+                @: if (!branches[branchName]){
+                @:      branches[branchName] = gitGraph.branch( branchName );
+                @: }
+
+                @: branches[branchName].commit('@commit.Message');
+
+                //@:commits['@commit.ID'] = 1;
+
+                //x++;
+
+                @*foreach (var parent in commit.Parents)
                 {
                     if (!addedNodes.Contains(commit.ID)){
                         addedNodes.Add(commit.ID);
-                        @:nodes.push({ id: '@commit.ID', label: '@commit.Message',   x: @(rnd.Next(10)), y: @(rnd.Next(10)), "size": 1 });
+                        @:nodes.push({ id: '@commit.ID', label: '@commit.Message',   x: @(x), y: @(y++), "size": 1 });
                         }
 
                     @:edges.push({ id: 'e' + '@commit.ID _ @parent', source: '@commit.ID', target: '@parent.Substring(0, 7)' });
-                }
+                }*@
             }
 
-            for (var i = 0; i < edges.length; i++) {
-                var edge = edges[i];
-
-                if (!commits[edge.target]) {
-                    nodes.push({ id: edge.target, label: 'more', x: 1, y:1, size: 1 });
-                    commits[edge.target] = 1;
-                }
-            }
-
-            console.log({ nodes: nodes, edges: edges });
-
-            new sigma({
-                graph: { nodes: nodes, edges: edges },
-                width: '800px',
-                container: 'container',
-                settings: {
-                    defaultNodeColor: '#ec5148'
-                }
+            gitGraph.canvas.addEventListener("commit:mouseover", function (event) {
+                console.log("You're over a commit.", "Here is a bunch of data ->", event.data);
             });
+
         </script>
-
-
-
-        @*<script type="text/javascript" src="~/Scripts/raphael-min.js"></script>
-            <script type="text/javascript" src="~/Scripts/dracula_graffle.js"></script>
-            <script type="text/javascript" src="~/Scripts/dracula_graph.js"></script>
-
-            <div id="canvas"></div>
-
-            <script type="text/javascript">
-                var render = function(){
-                    console.log(arguments);
-                };
-
-                var g = new Graph();
-
-                @foreach (var commit in Model.Commits)
-                {
-                    foreach (var parent in commit.Parents)
-                    {
-                        @:g.addEdge('@parent.Substring(0, 7)', '@commit.ID.Substring(0, 7)', { label: '@commit.Message.Replace("\r\n", "\\\\n").Replace("\n", "\\\\n")', render: render });
-                    }
-                }
-
-                var layouter = new Graph.Layout.Spring(g);
-                layouter.layout();
-
-                var renderer = new Graph.Renderer.Raphael('canvas', g, 1000, 700);
-                renderer.draw();
-            </script>*@
     }
 }
